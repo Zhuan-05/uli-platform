@@ -1,131 +1,216 @@
-# Universal LEGO Interface (ULI) Platform
+# ULI Platform — Universal LEGO Interface
 
-**Build once, reuse everywhere, connect through stable interfaces.**
+**English** | [中文文档](README.zh-CN.md)
 
-ULI is a local-first, Windows-oriented platform for hosting independent
-applications and connecting their capabilities through stable, versioned,
-validated contracts — without rewriting the applications' business logic and
-without any paid services.
+> Imagine LEGO for software: small apps that snap together through standard
+> connectors. Build once, reuse everywhere.
 
-> This repository is the ULI Platform root. The folder may be named anything;
-> all paths are relative. Rename/move it freely, then re-run setup.
+ULI is a **local-first** platform that runs on your own computer. It lets you:
 
----
+- Run several independent apps side by side,
+- Let them talk to each other through safe, checked "plugs",
+- Paste in a ready-made website and host it without changing its code,
+- Drag apps onto a canvas and connect them, then press **Execute**.
 
-## What actually works (MVP)
-
-| Capability | Status |
-|---|---|
-| Application registry with manifest JSON-Schema validation | ✅ working |
-| Enable / disable / start / stop / restart / health / uninstall lifecycle | ✅ working |
-| Static website import + hosting (`/host/<app-id>/`) | ✅ working |
-| External URL registration + embed-feasibility check | ✅ working |
-| Trusted local Python runtime (process spawn, health check, port-conflict fallback) | ✅ working |
-| Capability registry, discovery, brokered invocation, I/O schema validation | ✅ working |
-| Versioned event bus with schema validation + external delivery | ✅ working |
-| Two independent example apps (Order + Inventory) doing a real cross-app call | ✅ working |
-| Visual builder (React Flow): add nodes, connect typed ports, reject incompatible links, save/load/execute blueprints | ✅ working |
-| Independent theme layer (dark Apple-style glass default + light) | ✅ working |
-| Automated tests (35) including a live end-to-end test | ✅ 35/35 passing |
-| Windows setup/launch scripts | ✅ provided (see `docs/WINDOWS_SETUP.md`) |
-| Server / container runtimes | 🔜 documented extension points only |
-
-Never claimed: "every arbitrary website integrates automatically". Hosting a
-site is not the same as functionally integrating it. See
-`docs/KNOWN_LIMITATIONS.md`.
+No cloud, no accounts, no monthly fees. Everything stays on `127.0.0.1`.
 
 ---
 
-## Quick start (Windows)
+## 😀 Never used a terminal before? Start here
 
-```bat
-git clone <your-repo> uli-platform
-cd uli-platform
-scripts\setup.bat      :: creates .venv, installs deps, builds the UI
-scripts\run.bat        :: starts Core + UI, registers example apps
-```
+You will copy and paste a few commands. That's it. Follow the steps in order.
 
-Then open <http://127.0.0.1:8787/ui/>.
+### Step 1 — Install two free programs
 
-## Quick start (Linux / macOS / WSL)
+| Program | Why | Download | How to check |
+|---|---|---|---|
+| **Python 3.11 or newer** | Runs the platform backend | <https://www.python.org/downloads/> | `python --version` |
+| **Node.js 18 or newer** | Builds the user interface | <https://nodejs.org/> | `node --version` |
+
+> ⚠️ **Windows users:** on the Python installer's first screen, tick
+> **“Add python.exe to PATH”** before clicking Install. If you forget, the setup
+> script will tell you Python was not found.
+
+### Step 2 — Get the project
+
+**Option A — Download ZIP (easiest):**
+
+1. On the GitHub page click the green **`Code`** button.
+2. Click **Download ZIP** and unpack it somewhere simple, e.g.
+   `C:\uli-platform`.
+
+**Option B — Git clone (if you have Git):**
 
 ```bash
-cd uli-platform
+git clone https://github.com/Zhuan-05/uli-platform.git
+```
+
+### Step 3 — Open a terminal in the project folder
+
+- **Windows:** open the `uli-platform` folder in File Explorer, click the address
+  bar, type `cmd`, press Enter. A black window opens already “inside” the folder.
+- **macOS:** right-click the folder → **Services** → **New Terminal at Folder**.
+- **Linux:** open a terminal and `cd` into the folder.
+
+### Step 4 — Install (one command)
+
+**Windows:**
+
+```bat
+scripts\setup.bat
+```
+
+**macOS / Linux:**
+
+```bash
+chmod +x scripts/*.sh
 scripts/setup.sh
+```
+
+This creates a private Python environment, downloads what it needs, and builds
+the web page. First run takes a few minutes. When it says **Setup complete**,
+you're ready.
+
+### Step 5 — Start it
+
+**Windows:**
+
+```bat
+scripts\run.bat
+```
+
+**macOS / Linux:**
+
+```bash
 scripts/run.sh
 ```
 
-Or manually:
+Leave this window open — it *is* the platform. You'll see:
 
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-(cd frontend && npm install && npm run build)
-.venv/bin/python scripts/run.py --seed --seed-static
+```
+Starting ULI Core on http://127.0.0.1:8787
+UI:  http://127.0.0.1:8787/ui/
 ```
 
-The UI is served at `/ui/`, the OpenAPI docs at `/docs`.
+### Step 6 — Open the app
+
+In your browser go to:
+
+## 👉 http://127.0.0.1:8787/ui/
 
 ---
 
-## Repository layout
+## 🧭 Your first 5 minutes (guided tour)
 
-```
-core/                ULI Core: registry, capabilities, compatibility, server, importer
-uli_sdk/             Native Track SDK (declare capabilities, call the broker)
-runtime_adapters/    static-site, external-url, local-python, in-process
-module_manager/      lifecycle orchestration + capability broker + event dispatch
-applications/        example apps (order_app, inventory_app) — independently packaged
-compatibility/       manifest JSON Schema + validator + compatibility rules
-event_bus/           versioned event bus
-blueprints/          Blueprint schema, store, and execution engine
-frontend/            TypeScript + React + Vite + React Flow UI (dist/ committed)
-theme_design/        independent design-token themes
-examples/            a prebuilt static website used to demo the Legacy Track
-tests/               pytest suite (unit + functional + live end-to-end)
-docs/                architecture, spec, guides, test report, limitations, roadmap
-scripts/             setup/run/dev/build scripts, seeding
-```
+1. **Left menu → Applications.** You'll see three "LEGO blocks":
+   - *Inventory App* and *Order App* (two independent apps), and
+   - *Acme Catalogue* (a ready-made website that was pasted in unchanged).
+2. Click **Start** on **Inventory App**, then **Start** on **Order App**.
+   Their badges turn green → `running`.
+3. **Left menu → Visual Builder.**
+4. Click **Load example flow**. Three boxes appear, connected by arrows.
+   The middle box is `order.create`.
+5. Click **Execute**.
+   The Result panel shows an order. Notice the stock number came from the
+   **Inventory App** — the two apps talked to each other through ULI. 🎉
+6. **Left menu → Themes** and switch between the dark glass look and light.
+7. **Left menu → Activity** to watch the events the apps produced.
 
----
+### What each menu does
 
-## The three LEGO levels
-
-* **Application LEGO** — register, launch, stop, disable, upgrade, remove apps.
-* **Functional LEGO** — publish/consume capabilities and events across apps
-  through validated contracts. Fully implemented in the MVP.
-* **Component LEGO** — `ui.extensionPoints` in the manifest + a documented
-  theme SDK. A working contract + proof-of-concept extension points are
-  provided; a general component host is future work.
-
-## Two compatibility tracks
-
-* **Legacy Track** — import an existing prebuilt website and host it unchanged
-  via the App Host. Optional Adapter required for deep integration.
-* **Native Track** — build new apps with the ULI SDK; they expose capabilities,
-  events, and lifecycle metadata directly.
-
-Both tracks speak the **same public contracts** documented in
-`docs/ULI_INTERFACE_SPEC.md`.
-
-## Documentation
-
-| Document | Purpose |
+| Menu | What it's for |
 |---|---|
-| `docs/ARCHITECTURE.md` | Layered architecture and dependency rules |
-| `docs/ARCHITECTURE_DECISION_RECORD.md` | Why the stack and boundaries were chosen |
-| `docs/ULI_INTERFACE_SPEC.md` | Formal ULI v1.0 interface specification |
-| `docs/NATIVE_SDK_GUIDE.md` | Building a native ULI application |
-| `docs/MODULE_DEVELOPER_GUIDE.md` | Packaging, manifest, versions, permissions |
-| `docs/LEGACY_WEBSITE_IMPORT.md` | Importing existing websites |
-| `docs/WINDOWS_SETUP.md` | Reproducible Windows setup |
-| `docs/TROUBLESHOOTING.md` | Common failures and fixes |
-| `docs/TEST_REPORT.md` | Actual test results (35/35) |
-| `docs/KNOWN_LIMITATIONS.md` | Honest limits and disabled-by-design features |
-| `docs/ROADMAP.md` | Extension points and future work |
+| **Applications** | Install / start / stop / remove apps |
+| **Capabilities** | See what each app can *do* (its "plugs") |
+| **Visual Builder** | Drag blocks onto a canvas, connect them, run the flow |
+| **Blueprints** | Saved flows — reopen or re-run them |
+| **Themes** | Change the look; backend logic is untouched |
+| **Activity** | A log of everything that happened |
+
+---
+
+## 🧩 Try the two "wow" features
+
+### A. Paste in an existing website
+
+**Applications → Import a prebuilt static website**, type a **folder path** on
+your computer that contains an `index.html`, give it a name, click **Import
+folder**, then **Open**. The site's files are copied **exactly as they are** —
+ULI does not rewrite your code.
+
+### B. Connect two apps
+
+In **Visual Builder**, click the capability `inventory.check` in the left palette
+to drop it on the canvas, then drag from one box's right dot to another box's
+left dot. If the two "plugs" don't match, ULI **refuses the link and tells you
+why** — that's a feature, not a bug.
+
+---
+
+## ⏹ Stopping, restarting, resetting
+
+| I want to… | Do this |
+|---|---|
+| Stop the platform | Close the terminal window, or press `Ctrl + C` in it |
+| Start again | Run `scripts\run.bat` (Windows) / `scripts/run.sh` (macOS/Linux) |
+| Use a different port | Windows: `set ULI_CORE_PORT=9000` then `scripts\run.bat` |
+| Wipe everything back to fresh | Delete the `data` folder, then start again |
+
+`data/` holds the registry, your blueprints, the event log, and imported sites.
+
+---
+
+## 🆘 Common beginner problems
+
+| Symptom | Fix |
+|---|---|
+| “`python` is not recognized” | Reinstall Python and tick **Add python.exe to PATH** |
+| “`node` is not recognized” | Reinstall Node.js, reopen the terminal |
+| `setup.bat` says `.venv` missing when running | Run `scripts\setup.bat` first |
+| `/` shows plain text, no UI | The UI wasn't built: run `scripts\setup.bat` again |
+| Page won't load | Make sure the `run` window is still open; check the port (8787) |
+| Port already in use | Set `ULI_CORE_PORT` to another number (e.g. 9000) |
+| Imported site has broken images/CSS | That site uses root-absolute links; see `docs/LEGACY_WEBSITE_IMPORT.md` |
+| Something crashed | Look in `data/logs/` — each app writes its own log file |
+
+More: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+
+---
+
+## 👩‍💻 For developers
+
+- **Tests:** `.venv/bin/python -m pytest tests -v` (35 tests, all passing) —
+  see [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
+- **API docs (live):** <http://127.0.0.1:8787/docs>
+- **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- **Interface specification:** [`docs/ULI_INTERFACE_SPEC.md`](docs/ULI_INTERFACE_SPEC.md)
+- **Build a native app:** [`docs/NATIVE_SDK_GUIDE.md`](docs/NATIVE_SDK_GUIDE.md)
+- **Package & version apps:** [`docs/MODULE_DEVELOPER_GUIDE.md`](docs/MODULE_DEVELOPER_GUIDE.md)
+- **Import legacy sites:** [`docs/LEGACY_WEBSITE_IMPORT.md`](docs/LEGACY_WEBSITE_IMPORT.md)
+- **Windows setup details:** [`docs/WINDOWS_SETUP.md`](docs/WINDOWS_SETUP.md)
+- **Known limits (read this):** [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md)
+- **Roadmap:** [`docs/ROADMAP.md`](docs/ROADMAP.md)
+
+Project layout:
+
+```
+core/                The kernel (registry, API, validation)
+uli_sdk/             SDK for building new ("native") apps
+runtime_adapters/    How apps are hosted (static site, local process, URL…)
+module_manager/      Lifecycle + the safe "broker" between apps
+compatibility/       Manifest rules & version checking
+event_bus/           Versioned events
+blueprints/          Flows: schema, storage, execution
+frontend/            The web UI (built into frontend/dist)
+theme_design/        Themes
+applications/        Example apps (Order, Inventory)
+examples/            A ready-made website to import
+tests/               Automated tests
+docs/                All the detailed guides
+scripts/             Setup / run / build helpers
+```
 
 ## License
 
-Code in this repository is intended for use under a permissive license
-(compatible with the MIT/BSD/Apache-2.0 dependencies it uses). Add your chosen
-`LICENSE` file before distribution.
+Add your chosen `LICENSE` before distributing. Dependencies are permissively
+licensed (MIT / BSD / Apache-2.0).
