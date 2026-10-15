@@ -16,6 +16,7 @@ export interface AppSummary {
   requires: string[];
   permissions: string[];
   frontend: string | null;
+  url: string | null;
   description: string;
 }
 

@@ -199,7 +199,7 @@ export default function App() {
                     <button className="btn ghost" onClick={() => api.getApp(app.id).then(setSelected)}>
                       Details
                     </button>
-                    <a className="btn ghost" href={`/host/${app.id}/`} target="_blank" rel="noreferrer">
+                    <a className="btn ghost" href={app.runtimeType === "external-url" && app.url ? app.url : `/host/${app.id}/`} target="_blank" rel="noreferrer">
                       Open
                     </a>
                     <button className="btn danger" disabled={busy} onClick={() => run(() => api.uninstall(app.id), `Removed ${app.name} (data preserved)`)}>

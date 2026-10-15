@@ -5,7 +5,7 @@ them through the broker, which enforces contracts and permissions.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 
 from compatibility.validator import _build_manifest

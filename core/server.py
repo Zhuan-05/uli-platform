@@ -159,6 +159,7 @@ def create_app(services: Services | None = None) -> FastAPI:
             "requires": [c["id"] for c in manifest.get("capabilities", {}).get("requires", [])],
             "permissions": manifest.get("permissions", []),
             "frontend": manifest.get("frontend", {}).get("entry"),
+            "url": manifest.get("runtime", {}).get("url"),
             "description": manifest.get("description", ""),
         }
 
