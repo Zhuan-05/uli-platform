@@ -212,5 +212,10 @@ scripts/             Setup / run / build helpers
 
 ## License
 
-Add your chosen `LICENSE` before distributing. Dependencies are permissively
-licensed (MIT / BSD / Apache-2.0).
+MIT License — see [`LICENSE`](LICENSE).
+
+Copyright (c) 2026 Zhuan-05.
+
+You are free to use, modify, and distribute this software, including for
+commercial purposes, as long as the copyright and permission notices are kept.
+Dependencies are permissively licensed (MIT / BSD / Apache-2.0).
