@@ -1,0 +1,158 @@
+{
+  "manifestVersion": "1.0",
+  "id": "uli.examples.inventory",
+  "name": "Inventory App",
+  "description": "Standalone inventory records + stock lookup. Publishes an inventory.check capability consumed by other ULI apps.",
+  "version": "1.0.0",
+  "dataOwner": "uli.examples.inventory",
+  "uli": {
+    "protocol": ">=1.0.0 <2.0.0"
+  },
+  "runtime": {
+    "type": "local-python",
+    "entry": "backend/app.py",
+    "port": 0,
+    "healthPath": "/health"
+  },
+  "frontend": {
+    "entry": "frontend/index.html",
+    "embed": true
+  },
+  "capabilities": {
+    "provides": [
+      {
+        "id": "inventory.check",
+        "version": "1.0.0",
+        "description": "Check available stock for a SKU.",
+        "inputType": "uli.inventory.check.request@1",
+        "outputType": "uli.inventory.check.response@1",
+        "timeoutMs": 4000,
+        "inputSchema": {
+          "type": "object",
+          "required": ["sku"],
+          "additionalProperties": false,
+          "properties": {
+            "sku": { "type": "string", "minLength": 1 },
+            "quantity": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "outputSchema": {
+          "type": "object",
+          "required": ["sku", "known", "available", "inStock"],
+          "properties": {
+            "sku": { "type": "string" },
+            "name": { "type": "string" },
+            "known": { "type": "boolean" },
+            "available": { "type": "integer", "minimum": 0 },
+            "requested": { "type": "integer", "minimum": 0 },
+            "inStock": { "type": "boolean" },
+            "reorderLevel": { "type": "integer", "minimum": 0 }
+          }
+        }
+      },
+      {
+        "id": "inventory.list",
+        "version": "1.0.0",
+        "description": "List all inventory records.",
+        "inputType": "uli.inventory.list.request@1",
+        "outputType": "uli.inventory.list.response@1",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "lowOnly": { "type": "boolean" }
+          }
+        },
+        "outputSchema": {
+          "type": "object",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["sku", "name", "quantity", "reorderLevel"],
+                "properties": {
+                  "sku": { "type": "string" },
+                  "name": { "type": "string" },
+                  "quantity": { "type": "integer", "minimum": 0 },
+                  "reorderLevel": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "inventory.record",
+        "version": "1.0.0",
+        "description": "Create or update an inventory record.",
+        "inputType": "uli.inventory.record.request@1",
+        "outputType": "uli.inventory.record.response@1",
+        "inputSchema": {
+          "type": "object",
+          "required": ["sku", "quantity"],
+          "additionalProperties": false,
+          "properties": {
+            "sku": { "type": "string", "minLength": 1 },
+            "name": { "type": "string" },
+            "quantity": { "type": "integer", "minimum": 0 },
+            "reorderLevel": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "outputSchema": {
+          "type": "object",
+          "required": ["sku", "quantity", "updated"],
+          "properties": {
+            "sku": { "type": "string" },
+            "quantity": { "type": "integer", "minimum": 0 },
+            "updated": { "type": "boolean" }
+          }
+        }
+      }
+    ],
+    "requires": []
+  },
+  "events": {
+    "publishes": [
+      {
+        "name": "inventory.low_stock",
+        "version": "1.0.0",
+        "description": "Emitted when a checked SKU is at or below its reorder level.",
+        "schema": {
+          "type": "object",
+          "required": ["sku", "quantity", "reorderLevel"],
+          "properties": {
+            "sku": { "type": "string" },
+            "quantity": { "type": "integer", "minimum": 0 },
+            "reorderLevel": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    ],
+    "subscribes": []
+  },
+  "permissions": ["data.own", "storage.kv", "events.publish.inventory.low_stock"],
+  "ui": {
+    "extensionPoints": [
+      {
+        "id": "inventory.dashboard",
+        "slot": "app.detail.tab",
+        "title": "Inventory",
+        "description": "Stock table for the inventory app."
+      }
+    ]
+  },
+  "config": {
+    "fields": [
+      {
+        "key": "low_stock_threshold_default",
+        "label": "Default reorder level",
+        "type": "number",
+        "required": false,
+        "default": 10,
+        "description": "Applied to SKUs created without an explicit reorderLevel."
+      }
+    ]
+  }
+}

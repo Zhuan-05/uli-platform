@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# ULI runtime data (registry DB, logs, imported apps)
+data/
+
+# Frontend
+frontend/node_modules/
+frontend/.vite/
+
+# NOTE: frontend/dist IS committed on purpose so end users need no Node toolchain.
+
+# OS / editors
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

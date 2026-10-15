@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Order App</title>
+  <style>
+    :root { --bg:#0b0f17; --panel:#141a26; --text:#e8eefc; --muted:#8ea0c0; --accent:#4f8cff; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+           background:var(--bg); color:var(--text); padding:32px; }
+    h1 { margin:0 0 4px; font-size:1.6rem; }
+    p.sub { color:var(--muted); margin:0 0 20px; }
+    .card { background:var(--panel); border-radius:12px; padding:18px; margin-bottom:18px; }
+    input,select { background:#0e1420; border:1px solid rgba(255,255,255,.12); color:var(--text);
+                   padding:8px 10px; border-radius:8px; margin-right:8px; }
+    button { background:var(--accent); border:0; color:white; padding:9px 16px; border-radius:8px;
+             cursor:pointer; font-weight:600; }
+    .line { display:flex; gap:8px; margin-bottom:8px; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { padding:8px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,.06); }
+    th { color:var(--muted); font-size:.82rem; text-transform:uppercase; }
+    .confirmed { color:#7ee0a3; } .backorder { color:#ffb86b; }
+  </style>
+</head>
+<body>
+  <h1>Orders</h1>
+  <p class="sub">Creating an order asks ULI Core to run <code>inventory.check</code> on the Inventory App.</p>
+  <div class="card">
+    <div class="line"><input id="customer" placeholder="Customer" value="Walk-in" /></div>
+    <div id="items">
+      <div class="line"><input class="sku" placeholder="SKU" value="SKU-001" />
+        <input class="qty" type="number" min="1" value="2" /></div>
+    </div>
+    <button onclick="addItem()">+ item</button>
+    <button onclick="placeOrder()">Place order</button>
+    <div id="msg" style="margin-top:10px;color:var(--muted)"></div>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Lines</th></tr></thead>
+      <tbody id="orders"></tbody>
+    </table>
+  </div>
+  <script>
+    const API = "/api/capabilities";
+    async function invoke(capability, input) {
+      const res = await fetch(`${API}/${capability}/invoke`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.detail || res.statusText);
+      return body.output;
+    }
+    function addItem() {
+      const div = document.createElement("div");
+      div.className = "line";
+      div.innerHTML = `<input class="sku" placeholder="SKU" /><input class="qty" type="number" min="1" value="1" />`;
+      document.getElementById("items").appendChild(div);
+    }
+    async function placeOrder() {
+      const customer = document.getElementById("customer").value;
+      const items = [...document.querySelectorAll("#items .line")].map(l => ({
+        sku: l.querySelector(".sku").value,
+        quantity: Number(l.querySelector(".qty").value),
+      })).filter(i => i.sku);
+      document.getElementById("msg").textContent = "Placing…";
+      try {
+        const order = await invoke("order.create", { customer, items });
+        document.getElementById("msg").textContent = `Created ${order.orderId} (${order.status}).`;
+        refresh();
+      } catch (e) { document.getElementById("msg").textContent = "Error: " + e.message; }
+    }
+    async function refresh() {
+      try {
+        const data = await invoke("order.list", {});
+        document.getElementById("orders").innerHTML = data.orders.map(o =>
+          `<tr><td>${o.orderId}</td><td>${o.customer}</td>
+           <td class="${o.status}">${o.status}</td><td>${o.lines.length}</td></tr>`
+        ).join("") || `<tr><td colspan="4">No orders yet</td></tr>`;
+      } catch (e) { /* ignore */ }
+    }
+    refresh();
+  </script>
+</body>
+</html>

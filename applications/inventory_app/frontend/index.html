@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inventory App</title>
+  <style>
+    :root { --bg:#0b0f17; --panel:#141a26; --text:#e8eefc; --muted:#8ea0c0; --accent:#4f8cff; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+           background:var(--bg); color:var(--text); padding:32px; }
+    h1 { margin:0 0 4px; font-size:1.6rem; }
+    p.sub { color:var(--muted); margin:0 0 20px; }
+    table { width:100%; border-collapse:collapse; background:var(--panel); border-radius:12px; overflow:hidden; }
+    th,td { padding:10px 14px; text-align:left; border-bottom:1px solid rgba(255,255,255,.06); }
+    th { color:var(--muted); font-weight:500; font-size:.85rem; text-transform:uppercase; }
+    .low { color:#ff8f6b; font-weight:600; }
+    .ok { color:#7ee0a3; }
+    form { margin-top:20px; display:flex; gap:8px; flex-wrap:wrap; }
+    input { background:#0e1420; border:1px solid rgba(255,255,255,.12); color:var(--text); padding:8px 10px; border-radius:8px; }
+    button { background:var(--accent); border:0; color:white; padding:9px 16px; border-radius:8px; cursor:pointer; font-weight:600; }
+    button:hover { filter:brightness(1.1); }
+  </style>
+</head>
+<body>
+  <h1>Inventory</h1>
+  <p class="sub">Native ULI app frontend. It calls the ULI Core capability broker, not its own backend directly.</p>
+  <table>
+    <thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Reorder</th><th>Status</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+  </table>
+  <form id="record-form">
+    <input name="sku" placeholder="SKU" required />
+    <input name="name" placeholder="Name" />
+    <input name="quantity" type="number" min="0" placeholder="Quantity" required />
+    <input name="reorderLevel" type="number" min="0" placeholder="Reorder level" />
+    <button type="submit">Save record</button>
+  </form>
+  <script>
+    const API = "/api/capabilities";
+    async function invoke(capability, input) {
+      const res = await fetch(`${API}/${capability}/invoke`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.detail || res.statusText);
+      return body.output;
+    }
+    async function refresh() {
+      const tbody = document.getElementById("rows");
+      try {
+        const data = await invoke("inventory.list", {});
+        tbody.innerHTML = data.items.map(i => {
+          const low = i.quantity <= i.reorderLevel;
+          return `<tr><td>${i.sku}</td><td>${i.name}</td><td>${i.quantity}</td>
+            <td>${i.reorderLevel}</td><td class="${low ? "low" : "ok"}">${low ? "LOW" : "OK"}</td></tr>`;
+        }).join("") || `<tr><td colspan="5">No records</td></tr>`;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="low">${e.message}</td></tr>`;
+      }
+    }
+    document.getElementById("record-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const f = new FormData(ev.target);
+      await invoke("inventory.record", {
+        sku: f.get("sku"),
+        name: f.get("name") || undefined,
+        quantity: Number(f.get("quantity")),
+        reorderLevel: f.get("reorderLevel") ? Number(f.get("reorderLevel")) : undefined,
+      });
+      ev.target.reset();
+      refresh();
+    });
+    refresh();
+  </script>
+</body>
+</html>
